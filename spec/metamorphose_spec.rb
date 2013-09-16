@@ -17,9 +17,14 @@ describe Metamorphose do
       it 'returns the expression wrapped with metamorphose_piece' do
         result.should eq %Q'MetamorphoseForDescription.metamorphose_piece(hoge, "hoge", [#{line_num}, #{col_num}])'
       end
-      it 'returns the source code which should be evaluated as before metamorphosed' do
-        eval( result, TOPLEVEL_BINDING ).should eq eval( source_code, TOPLEVEL_BINDING )
+
+      context 'when the expression does not have no runtime error.' do
+        before { eval 'def hoge; end', TOPLEVEL_BINDING }
+        it 'returns the source code which should be evaluated as before metamorphosed' do
+          eval( result, TOPLEVEL_BINDING ).should eq eval( source_code, TOPLEVEL_BINDING )
+        end
       end
+
     end
 
     context 'given a source code in Ruby' do
@@ -40,8 +45,15 @@ describe Metamorphose do
           ')'
         )
       end
-      it 'returns the source code which should be evaluated as before metamorphosed' do
-        eval( result, TOPLEVEL_BINDING ).should eq eval( source_code, TOPLEVEL_BINDING )
+      context 'when the source code does not have no runtime error.' do
+        before do
+          eval 'def hoge *args; end', TOPLEVEL_BINDING
+          eval 'def ab; end', TOPLEVEL_BINDING
+          eval 'def cd; end', TOPLEVEL_BINDING
+        end
+        it 'returns the source code which should be evaluated as before metamorphosed' do
+          eval( result, TOPLEVEL_BINDING ).should eq eval( source_code, TOPLEVEL_BINDING )
+        end
       end
     end
 
