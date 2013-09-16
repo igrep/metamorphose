@@ -18,7 +18,7 @@ describe Metamorphose do
         result.should eq %Q'MetamorphoseForDescription.metamorphose_piece(hoge, "hoge", [#{line_num}, #{col_num}])'
       end
       it 'returns the source code which should be evaluated as before metamorphosed' do
-        eval( result, TOPLEVEL_BINDING ).should be eval( source_code, TOPLEVEL_BINDING )
+        eval( result, TOPLEVEL_BINDING ).should eq eval( source_code, TOPLEVEL_BINDING )
       end
     end
 
@@ -41,7 +41,7 @@ describe Metamorphose do
         )
       end
       it 'returns the source code which should be evaluated as before metamorphosed' do
-        eval( result, TOPLEVEL_BINDING ).should be eval( source_code, TOPLEVEL_BINDING )
+        eval( result, TOPLEVEL_BINDING ).should eq eval( source_code, TOPLEVEL_BINDING )
       end
     end
 
