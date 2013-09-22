@@ -14,7 +14,7 @@ module Metamorphose
     end
 
     class << self
-      def self.detect sexp
+      def detect sexp
         first = sexp.first
         case first
         when Array
