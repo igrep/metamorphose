@@ -22,6 +22,12 @@ module Metamorphose
       End
     end
 
+    def on_vcall *args
+      @metamorphosed_source = "Metamorphoser(" << @metamorphosed_source << ")"
+      args.unshift :vcall
+      args
+    end
+
     SCANNER_EVENTS.each do |event|
       module_eval(<<-End, __FILE__, __LINE__ + 1)
         def on_#{event} token
