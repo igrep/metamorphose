@@ -1,46 +1,35 @@
 require "metamorphose/version"
 
+require 'ripper/core'
+
 module Metamorphose
 
-  class RipperSexp
-    AT_MARK = "@"
+  class Metamorphoser < ::Ripper
+    attr_reader :metamorphosed_source
 
-    def initialize sexp
-      @sexp = sexp
+    def parse
+      @metamorphosed_source = ""
+      super
     end
 
-    def event_name
-      @sexp.first
-    end
-
-    class << self
-      def detect sexp
-        first = sexp.first
-        case first
-        when Array
-          self.detect first
-        when Symbol
-          if first[0] == AT_MARK
-            ScannerEvent.new( sexp )
-          else
-            ParserEvent.new( sexp )
-          end
-        else
-          raise ArgumentError, "#{sexp.inspect} doesn't seem to be a S expression!"
+    PARSER_EVENTS.each do |event|
+      module_eval(<<-End, __FILE__, __LINE__ + 1)
+        def on_#{event}(*args)
+          puts "on_#{event}: '\#{args.inspect}'"
+          args.unshift :#{event}
+          args
         end
-      end
+      End
     end
 
-    class ScannerEvent < RipperSexp
-      def token
-        @sexp[1]
-      end
-      def location_info
-        @sexp[2]
-      end
-    end
-
-    class ParserEvent < RipperSexp
+    SCANNER_EVENTS.each do |event|
+      module_eval(<<-End, __FILE__, __LINE__ + 1)
+        def on_#{event} token
+          puts "on_#{event}: '\#{token}'"
+          @metamorphosed_source << token
+          token
+        end
+      End
     end
 
   end
