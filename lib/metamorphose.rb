@@ -10,6 +10,11 @@ module Metamorphose
     m.metamorphosed_source
   end
 
+  def metamorphose_piece value, expression, line_column
+    self._metamorphose_piece value, expression, line_column
+    value
+  end
+
   class Metamorphoser < ::Ripper
     attr_reader :metamorphosed_source
 
@@ -35,7 +40,7 @@ module Metamorphose
 
     def on_vcall *args
       @metamorphosed_source =
-        "#@metamorphoser_module.metamorphose_piece(" \
+        "#@metamorphoser_module._metamorphose_piece(" \
           "#@metamorphosed_source," \
           " #{@metamorphosed_source.inspect}," \
           " [#{self.lineno}, #{self.column}]" \
