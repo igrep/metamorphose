@@ -10,8 +10,8 @@ module Metamorphose
     m.metamorphosed_source
   end
 
-  def metamorphose_piece value, expression, line_column
-    self._metamorphose_piece value, expression, line_column
+  def _metamorphose_piece value, expression, line_column
+    self.metamorphose_piece value, expression, line_column
     value
   end
 

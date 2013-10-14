@@ -13,7 +13,7 @@ describe Metamorphose do
         @binding = binding
         MetamorphoseForDescription = Module.new {
           extend Metamorphose
-          def metamorphose_piece _value, _expression, _line_column
+          def self.metamorphose_piece _value, _expression, _line_column
             # do nothing
           end
         }
