@@ -2,10 +2,13 @@ require 'spec_helper'
 
 describe Metamorphose do
   before( :all ) do
+    # save binding to evaluate this module later
     @binding = binding
     MetamorphoseForDescription = Module.new { extend Metamorphose }
   end
+
   subject { MetamorphoseForDescription }
+
   it 'should have a version number' do
     Metamorphose::VERSION.should_not be_nil
   end
