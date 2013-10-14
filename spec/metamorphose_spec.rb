@@ -53,8 +53,9 @@ describe Metamorphose do
                 'hoge ' \
                 "MetamorphoseForDescription._metamorphose_piece(ab, \"ab\", [#{line_num}, #{col_num_ab}]), " \
                 "MetamorphoseForDescription._metamorphose_piece(cd, \"cd\", [#{line_num}, #{col_num_cd}])" \
-              '),' \
-              "[#{line_num}, #{col_num_hoge}] " \
+              '), ' \
+              '"hoge", ' \
+              "[#{line_num}, #{col_num_hoge}]" \
             ')'
           )
         end
