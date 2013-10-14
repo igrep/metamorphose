@@ -4,8 +4,19 @@ require 'ripper/core'
 
 module Metamorphose
 
+  def metamorphose_source source_code
+    m = Metamorphoser.new( self, source_code )
+    m.parse
+    m.metamorphosed_source
+  end
+
   class Metamorphoser < ::Ripper
     attr_reader :metamorphosed_source
+
+    def initialize metamorphoser_module, *rest
+      @metamorphoser_module = metamorphoser_module
+      super( *rest )
+    end
 
     def parse
       @metamorphosed_source = ""
@@ -23,7 +34,12 @@ module Metamorphose
     end
 
     def on_vcall *args
-      @metamorphosed_source = "Metamorphoser(" << @metamorphosed_source << ")"
+      @metamorphosed_source =
+        "#@metamorphoser_module.metamorphose_piece(" \
+          "#@metamorphosed_source," \
+          " #{@metamorphosed_source.inspect}," \
+          " [#{self.lineno}, #{self.column}]" \
+        ")"
       args.unshift :vcall
       args
     end
@@ -32,10 +48,15 @@ module Metamorphose
       module_eval(<<-End, __FILE__, __LINE__ + 1)
         def on_#{event} token
           puts "on_#{event}: '\#{token}'"
-          @metamorphosed_source << token
           token
         end
       End
+    end
+
+    def on_ident token
+      puts "on_ident: '#{token}'"
+      @metamorphosed_source << token
+      token
     end
 
   end

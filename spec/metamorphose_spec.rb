@@ -1,7 +1,10 @@
 require 'spec_helper'
 
 describe Metamorphose do
-  before( :all ){ MetamorphoseForDescription = Module.new { extend Metamorphose } }
+  before( :all ) do
+    @binding = binding
+    MetamorphoseForDescription = Module.new { extend Metamorphose }
+  end
   subject { MetamorphoseForDescription }
   it 'should have a version number' do
     Metamorphose::VERSION.should_not be_nil
@@ -13,15 +16,15 @@ describe Metamorphose do
     context 'given a simple expression in Ruby' do
       let( :source_code ) { 'hoge' }
       let( :line_num ) { 1 }
-      let( :col_num ) { 1 }
+      let( :col_num ) { source_code.length }
       it 'returns the expression wrapped with metamorphose_piece' do
         result.should eq %Q'MetamorphoseForDescription.metamorphose_piece(hoge, "hoge", [#{line_num}, #{col_num}])'
       end
 
       context 'when the expression does not have no runtime error.' do
-        before { eval 'def hoge; end', TOPLEVEL_BINDING }
+        before { eval 'def hoge; end', @binding }
         it 'returns the source code which should be evaluated as before metamorphosed' do
-          eval( result, TOPLEVEL_BINDING ).should eq eval( source_code, TOPLEVEL_BINDING )
+          eval( result, @binding ).should eq eval( source_code, @binding )
         end
       end
 
