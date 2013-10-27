@@ -53,6 +53,7 @@ module Metamorphose
       module_eval(<<-End, __FILE__, __LINE__ + 1)
         def on_#{event} token
           puts "on_#{event}: '\#{token}'"
+          @metamorphosed_source << token
           token
         end
       End
