@@ -21,6 +21,7 @@ module Metamorphose
     def initialize metamorphoser_module, *rest
       @metamorphoser_module = metamorphoser_module
       @metamorphosed_tokens = []
+      @tokens = [TokenToWrap.new]
       super( *rest )
     end
 
@@ -81,6 +82,43 @@ module Metamorphose
           token
         end
       End
+    end
+
+    def on_ident token
+      @tokens.last.token = token
+      token
+    end
+
+    def wrap token
+      "#@metamorphoser_module._metamorphose_piece(" \
+        "#{token}," \
+        " \"#{token}\"," \
+        " [#{self.lineno}, #{self.column}]" \
+      ")"
+    end
+
+    class TokenToWrap # FIXME: Better name!
+      attr_reader :previous_source, :next_source
+      attr_accessor :token
+
+      def initialize
+        @previous_source = ''
+        @token           = nil
+        @next_source     = ''
+      end
+
+      def << token
+        if @token
+          @previous_source << token
+        else
+          @next_source << token
+        end
+      end
+
+      def wrap_with metamorphoser
+        "#{@previous_source}#{metamorphoser.wrap @token}#{@next_source}"
+      end
+
     end
 
   end
