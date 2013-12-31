@@ -20,12 +20,8 @@ module Metamorphose
 
     def initialize metamorphoser_module, *rest
       @metamorphoser_module = metamorphoser_module
-      super( *rest )
-    end
-
-    def parse
       @metamorphosed_tokens = []
-      super
+      super( *rest )
     end
 
     PARSER_EVENT_TABLE.each do |event_sym, arity|
