@@ -104,7 +104,7 @@ module Metamorphose
         "#{metamorphoser.wrap @target_token}#{@next_source}"
       end
 
-      def to_s
+      def to_s # called in TokenWrapper::Stack#join
         @next_source
       end
 
