@@ -20,7 +20,7 @@ module Metamorphose
     def initialize metamorphoser_module, *rest
       @metamorphoser_module = metamorphoser_module
       @metamorphosed_tokens = []
-      @token_stack = TokenToWrap::Stack.new
+      @token_stack = TokenWrapper::Stack.new
       super( *rest )
     end
 
@@ -89,20 +89,19 @@ module Metamorphose
       @token_stack.join
     end
 
-    class TokenToWrap # FIXME: Better name!
-      attr_accessor :token
+    class TokenWrapper
 
-      def initialize token = nil
-        @token       = token
-        @next_source = ''
+      def initialize target_token = nil
+        @target_token = target_token
+        @next_source  = ''
       end
 
-      def << token
+      def append_next_source token
         @next_source << token
       end
 
       def wrap_with metamorphoser
-        "#{metamorphoser.wrap @token}#{@next_source}"
+        "#{metamorphoser.wrap @target_token}#{@next_source}"
       end
 
       def to_s
@@ -116,11 +115,11 @@ module Metamorphose
         end
 
         def push_wrappable wrappable_token
-          @tokens.push TokenToWrap.new( wrappable_token )
+          @tokens.push TokenWrapper.new( wrappable_token )
         end
 
         def push_non_wrappable token
-          self.current << token
+          self.current.append_next_source token
         end
 
         def current
