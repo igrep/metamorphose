@@ -111,7 +111,7 @@ module Metamorphose
       class Stack
 
         def initialize
-          @tokens = []
+          @tokens = [TokenWrapper.new]
         end
 
         def push_wrappable wrappable_token
