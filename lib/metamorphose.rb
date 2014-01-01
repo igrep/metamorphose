@@ -7,7 +7,7 @@ module Metamorphose
   def metamorphose_source source_code
     m = Metamorphoser.new( self, source_code )
     m.parse
-    m.metamorphosed_tokens.join ''
+    m.result
   end
 
   def _metamorphose_piece value, expression, line_column
@@ -16,12 +16,11 @@ module Metamorphose
   end
 
   class Metamorphoser < ::Ripper
-    attr_reader :metamorphosed_tokens
 
     def initialize metamorphoser_module, *rest
       @metamorphoser_module = metamorphoser_module
       @metamorphosed_tokens = []
-      @tokens = [TokenToWrap.new]
+      @token_stack = TokenToWrap::Stack.new
       super( *rest )
     end
 
@@ -52,23 +51,10 @@ module Metamorphose
       end
     end
 
-    # append a method argument
-    def on_args_add args_list, item
-      puts "#{__method__}: '#{args_list.inspect}', '#{item}'"
-      @metamorphosed_tokens << ", "
-      args_list.push item
-      args_list
-    end
-
     # local variable reference
     def on_var_ref identifier
       puts "on_vcall: '#{identifier.inspect}'"
-      @metamorphosed_tokens <<
-        "#@metamorphoser_module._metamorphose_piece(" \
-          "#{identifier}," \
-          " \"#{identifier}\"," \
-          " [#{self.lineno}, #{self.column}]" \
-        ")"
+      @token_stack.wrap_current_with self
       identifier
     end
 
@@ -79,13 +65,15 @@ module Metamorphose
       module_eval(<<-End, __FILE__, __LINE__ + 1)
         def on_#{event} token
           puts "on_#{event}: '\#{token}'"
+          @token_stack.push_non_wrappable token
           token
         end
       End
     end
 
     def on_ident token
-      @tokens.last.token = token
+      puts "#{__method__}: '#{token}'"
+      @token_stack.push_wrappable token
       token
     end
 
@@ -97,26 +85,58 @@ module Metamorphose
       ")"
     end
 
+    def result
+      @token_stack.join
+    end
+
     class TokenToWrap # FIXME: Better name!
-      attr_reader :previous_source, :next_source
       attr_accessor :token
 
-      def initialize
-        @previous_source = ''
-        @token           = nil
-        @next_source     = ''
+      def initialize token = nil
+        @token       = token
+        @next_source = ''
       end
 
       def << token
-        if @token
-          @previous_source << token
-        else
-          @next_source << token
-        end
+        @next_source << token
       end
 
       def wrap_with metamorphoser
-        "#{@previous_source}#{metamorphoser.wrap @token}#{@next_source}"
+        "#{metamorphoser.wrap @token}#{@next_source}"
+      end
+
+      def to_s
+        @next_source
+      end
+
+      class Stack
+
+        def initialize
+          @tokens = []
+        end
+
+        def push_wrappable wrappable_token
+          @tokens.push TokenToWrap.new( wrappable_token )
+        end
+
+        def push_non_wrappable token
+          self.current << token
+        end
+
+        def current
+          @tokens.last
+        end
+
+        def wrap_current_with metamorphoser
+          wrapped = self.current.wrap_with metamorphoser
+          @tokens.pop
+          self.push_non_wrappable wrapped
+        end
+
+        def join
+          @tokens.join ''.freeze
+        end
+
       end
 
     end
