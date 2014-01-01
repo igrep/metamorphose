@@ -148,14 +148,17 @@ module Metamorphose
 
         def wrap_current_target_by metamorphoser
           wrapped = self.current.wrap_target_by metamorphoser
-          @tokens.pop
-          self.push_non_wrappable wrapped
+          self.switch_target_into wrapped
         end
 
         def wrap_current_by metamorphoser
           wrapped = self.current.wrap_whole_by metamorphoser
+          self.switch_target_into wrapped
+        end
+
+        def switch_target_into wrapped_source
           @tokens.pop
-          self.push_non_wrappable wrapped
+          self.push_non_wrappable wrapped_source
         end
 
         def join
