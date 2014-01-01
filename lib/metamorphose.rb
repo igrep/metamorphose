@@ -54,12 +54,19 @@ module Metamorphose
     # Parser event: local variable reference
     def on_var_ref identifier
       puts "on_vcall: '#{identifier.inspect}'"
-      @token_stack.wrap_current_with self
+      @token_stack.wrap_current_target_by self
       identifier
     end
 
     # Parser event: method call without arguments
     alias on_vcall on_var_ref
+
+    # Parser event: method call with arguments
+    def on_command method_name, _
+      puts "on_vcall: '#{method_name.inspect}'"
+      @token_stack.wrap_current_by self
+      method_name
+    end
 
     SCANNER_EVENTS.each do |event|
       module_eval(<<-End, __FILE__, __LINE__ + 1)
@@ -78,9 +85,17 @@ module Metamorphose
       token
     end
 
-    def wrap token
+    def wrap_token token
       "#@metamorphoser_module._metamorphose_piece(" \
         "#{token}," \
+        " \"#{token}\"," \
+        " [#{self.lineno}, #{self.column}]" \
+      ")"
+    end
+
+    def wrap_source token, source_next_to_the_token
+      "#@metamorphoser_module._metamorphose_piece(" \
+        "(#{token}#{source_next_to_the_token})," \
         " \"#{token}\"," \
         " [#{self.lineno}, #{self.column}]" \
       ")"
@@ -101,8 +116,12 @@ module Metamorphose
         @next_source << token
       end
 
-      def wrap_with metamorphoser
-        "#{metamorphoser.wrap @target_token}#{@next_source}"
+      def wrap_target_by metamorphoser
+        "#{metamorphoser.wrap_token @target_token}#{@next_source}"
+      end
+
+      def wrap_whole_by metamorphoser
+        metamorphoser.wrap_source @target_token, @next_source
       end
 
       def to_s # called in TokenWrapper::Stack#join
@@ -127,8 +146,14 @@ module Metamorphose
           @tokens.last
         end
 
-        def wrap_current_with metamorphoser
-          wrapped = self.current.wrap_with metamorphoser
+        def wrap_current_target_by metamorphoser
+          wrapped = self.current.wrap_target_by metamorphoser
+          @tokens.pop
+          self.push_non_wrappable wrapped
+        end
+
+        def wrap_current_by metamorphoser
+          wrapped = self.current.wrap_whole_by metamorphoser
           @tokens.pop
           self.push_non_wrappable wrapped
         end
