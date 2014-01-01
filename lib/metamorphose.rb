@@ -51,14 +51,14 @@ module Metamorphose
       end
     end
 
-    # local variable reference
+    # Parser event: local variable reference
     def on_var_ref identifier
       puts "on_vcall: '#{identifier.inspect}'"
       @token_stack.wrap_current_with self
       identifier
     end
 
-    # method call without arguments
+    # Parser event: method call without arguments
     alias on_vcall on_var_ref
 
     SCANNER_EVENTS.each do |event|
@@ -71,6 +71,7 @@ module Metamorphose
       End
     end
 
+    # Scanner event: any identifier (method name or variable name).
     def on_ident token
       puts "#{__method__}: '#{token}'"
       @token_stack.push_wrappable token
