@@ -32,7 +32,7 @@ describe Metamorphose do
         end
 
         context 'when the expression does not have no runtime error.' do
-          before { eval 'def hoge; end', @binding }
+          before { eval 'def hoge; "hoge" end', @binding }
           it 'returns the source code which should be evaluated as before metamorphosed' do
             eval( result, @binding ).should eq eval( source_code, @binding )
           end
@@ -62,12 +62,12 @@ describe Metamorphose do
 
         context 'when the source code does not have no runtime error.' do
           before do
-            eval 'def hoge *args; end', TOPLEVEL_BINDING
-            eval 'def ab; end', TOPLEVEL_BINDING
-            eval 'def cd; end', TOPLEVEL_BINDING
+            eval 'def hoge *args; args end', @binding
+            eval 'def ab; "ab" end', @binding
+            eval 'def cd; "cd" end', @binding
           end
           it 'returns the source code which should be evaluated as before metamorphosed' do
-            eval( result, TOPLEVEL_BINDING ).should eq eval( source_code, TOPLEVEL_BINDING )
+            eval( result, @binding ).should eq eval( source_code, @binding )
           end
         end
 
