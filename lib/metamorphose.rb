@@ -81,24 +81,24 @@ module Metamorphose
     # Scanner event: any identifier (method name or variable name).
     def on_ident token
       puts "#{__method__}: '#{token}'"
-      @token_stack.push_wrappable token
+      @token_stack.push_wrappable token, self.lineno, self.column
       token
     end
 
-    def wrap_token token, source_following_the_token
+    def wrap_token token, source_following_the_token, line_number, column_number
       "#@metamorphoser_module._metamorphose_piece(" \
         "#{token}," \
         " \"#{token}\"," \
-        " [#{self.lineno}, #{self.column}]" \
+        " [#{line_number}, #{column_number}]" \
       ")" \
       "#{source_following_the_token}"
     end
 
-    def wrap_source token, source_following_the_token
+    def wrap_source token, source_following_the_token, line_number, column_number
       "#@metamorphoser_module._metamorphose_piece(" \
         "(#{token}#{source_following_the_token})," \
         " \"#{token}\"," \
-        " [#{self.lineno}, #{self.column}]" \
+        " [#{line_number}, #{column_number}]" \
       ")"
     end
 
@@ -108,8 +108,10 @@ module Metamorphose
 
     class TokenWrapper
 
-      def initialize target_token = nil
+      def initialize target_token = nil, line_number = nil, column_number = nil
         @target_token = target_token
+        @line_number = line_number
+        @column_number = column_number
         @following_source  = ''
       end
 
@@ -118,11 +120,11 @@ module Metamorphose
       end
 
       def wrap_target_by metamorphoser
-        metamorphoser.wrap_token @target_token, @following_source
+        metamorphoser.wrap_token @target_token, @following_source, @line_number, @column_number
       end
 
       def wrap_whole_by metamorphoser
-        metamorphoser.wrap_source @target_token, @following_source
+        metamorphoser.wrap_source @target_token, @following_source, @line_number, @column_number
       end
 
       def to_s # called in TokenWrapper::Stack#join
@@ -135,8 +137,8 @@ module Metamorphose
           @tokens = [TokenWrapper.new]
         end
 
-        def push_wrappable wrappable_token
-          @tokens.push TokenWrapper.new( wrappable_token )
+        def push_wrappable wrappable_token, line_number, column_number
+          @tokens.push TokenWrapper.new( wrappable_token, line_number, column_number )
         end
 
         def push_non_wrappable token
