@@ -35,7 +35,6 @@ module Metamorphose
       elsif /_add\z/ =~ event
         module_eval(<<-End, __FILE__, __LINE__ + 1)
           def on_#{event}(list, item)
-            puts "on_#{event}: '\#{list.inspect}', '\#{item}'"
             list.push item
             list
           end
@@ -43,7 +42,6 @@ module Metamorphose
       else
         module_eval(<<-End, __FILE__, __LINE__ + 1)
           def on_#{event}(*args)
-            puts "on_#{event}: '\#{args.inspect}'"
             args.unshift :#{event}
             args
           end
@@ -53,7 +51,6 @@ module Metamorphose
 
     # Parser event: local variable reference
     def on_var_ref identifier
-      puts "on_vcall: '#{identifier.inspect}'"
       @source_piece_stack.wrap_current_by self
       identifier
     end
@@ -63,7 +60,6 @@ module Metamorphose
 
     # Parser event: method call with arguments
     def on_command method_name, _
-      puts "on_vcall: '#{method_name.inspect}'"
       @source_piece_stack.wrap_current_by self
       method_name
     end
@@ -71,7 +67,6 @@ module Metamorphose
     SCANNER_EVENTS.each do |event|
       module_eval(<<-End, __FILE__, __LINE__ + 1)
         def on_#{event} token
-          puts "on_#{event}: '\#{token}'"
           @source_piece_stack.push_non_wrappable token
           token
         end
@@ -80,7 +75,6 @@ module Metamorphose
 
     # Scanner event: any identifier (method name or variable name).
     def on_ident token
-      puts "#{__method__}: '#{token}'"
       @source_piece_stack.push_new_piece token, self.lineno, self.column
       token
     end
