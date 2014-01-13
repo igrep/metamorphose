@@ -108,6 +108,10 @@ module Metamorphose
         @source
       end
 
+      def inspect
+        "#<#{self.class} #{@source.inspect} at (#{@line_number}, #{@column_number})>"
+      end
+
       class Stack
 
         def initialize
