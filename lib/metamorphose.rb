@@ -93,9 +93,9 @@ module Metamorphose
       ")"
     end
 
-    def wrap_source token, source_next_to_the_token
+    def wrap_source token, source_following_the_token
       "#@metamorphoser_module._metamorphose_piece(" \
-        "(#{token}#{source_next_to_the_token})," \
+        "(#{token}#{source_following_the_token})," \
         " \"#{token}\"," \
         " [#{self.lineno}, #{self.column}]" \
       ")"
@@ -109,23 +109,23 @@ module Metamorphose
 
       def initialize target_token = nil
         @target_token = target_token
-        @next_source  = ''
+        @following_source  = ''
       end
 
-      def append_next_source token
-        @next_source << token
+      def append_following_source token
+        @following_source << token
       end
 
       def wrap_target_by metamorphoser
-        "#{metamorphoser.wrap_token @target_token}#{@next_source}"
+        "#{metamorphoser.wrap_token @target_token}#{@following_source}"
       end
 
       def wrap_whole_by metamorphoser
-        metamorphoser.wrap_source @target_token, @next_source
+        metamorphoser.wrap_source @target_token, @following_source
       end
 
       def to_s # called in TokenWrapper::Stack#join
-        @next_source
+        @following_source
       end
 
       class Stack
@@ -139,7 +139,7 @@ module Metamorphose
         end
 
         def push_non_wrappable token
-          self.current.append_next_source token
+          self.current.append_following_source token
         end
 
         def current
