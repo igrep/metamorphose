@@ -85,12 +85,13 @@ module Metamorphose
       token
     end
 
-    def wrap_token token
+    def wrap_token token, source_following_the_token
       "#@metamorphoser_module._metamorphose_piece(" \
         "#{token}," \
         " \"#{token}\"," \
         " [#{self.lineno}, #{self.column}]" \
-      ")"
+      ")" \
+      "#{source_following_the_token}"
     end
 
     def wrap_source token, source_following_the_token
@@ -117,7 +118,7 @@ module Metamorphose
       end
 
       def wrap_target_by metamorphoser
-        "#{metamorphoser.wrap_token @target_token}#{@following_source}"
+        metamorphoser.wrap_token @target_token, @following_source
       end
 
       def wrap_whole_by metamorphoser
