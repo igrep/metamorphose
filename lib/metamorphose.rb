@@ -19,8 +19,8 @@ module Metamorphose
 
     def initialize metamorphoser_module, *rest
       @metamorphoser_module = metamorphoser_module
-      @metamorphosed_tokens = []
-      @token_stack = TokenWrapper::Stack.new
+      @metamorphosed_source_pieces = []
+      @source_piece_stack = SourcePiece::Stack.new
       super( *rest )
     end
 
@@ -54,7 +54,7 @@ module Metamorphose
     # Parser event: local variable reference
     def on_var_ref identifier
       puts "on_vcall: '#{identifier.inspect}'"
-      @token_stack.wrap_current_target_by self
+      @source_piece_stack.wrap_current_by self
       identifier
     end
 
@@ -64,7 +64,7 @@ module Metamorphose
     # Parser event: method call with arguments
     def on_command method_name, _
       puts "on_vcall: '#{method_name.inspect}'"
-      @token_stack.wrap_current_by self
+      @source_piece_stack.wrap_current_by self
       method_name
     end
 
@@ -72,7 +72,7 @@ module Metamorphose
       module_eval(<<-End, __FILE__, __LINE__ + 1)
         def on_#{event} token
           puts "on_#{event}: '\#{token}'"
-          @token_stack.push_non_wrappable token
+          @source_piece_stack.push_non_wrappable token
           token
         end
       End
@@ -81,91 +81,65 @@ module Metamorphose
     # Scanner event: any identifier (method name or variable name).
     def on_ident token
       puts "#{__method__}: '#{token}'"
-      @token_stack.push_wrappable token, self.lineno, self.column
+      @source_piece_stack.push_new_piece token, self.lineno, self.column
       token
     end
 
-    def wrap_token token, source_following_the_token, line_number, column_number
+    def wrap_source_piece source_piece
       "#@metamorphoser_module._metamorphose_piece(" \
-        "#{token}," \
-        " \"#{token}\"," \
-        " [#{line_number}, #{column_number}]" \
-      ")" \
-      "#{source_following_the_token}"
-    end
-
-    def wrap_source token, source_following_the_token, line_number, column_number
-      "#@metamorphoser_module._metamorphose_piece(" \
-        "(#{token}#{source_following_the_token})," \
-        " \"#{token}\"," \
-        " [#{line_number}, #{column_number}]" \
+        "(#{source_piece.source})," \
+        " \"#{source_piece.source}\"," \
+        " [#{source_piece.line_number}, #{source_piece.column_number}]" \
       ")"
     end
 
     def result
-      @token_stack.join
+      @source_piece_stack.join
     end
 
-    class TokenWrapper
+    class SourcePiece
+      attr_reader :source, :line_number, :column_number
 
-      def initialize target_token = nil, line_number = nil, column_number = nil
-        @target_token = target_token
+      def initialize initial_source, line_number = nil, column_number = nil
+        @source = initial_source
         @line_number = line_number
         @column_number = column_number
-        @following_source  = ''
       end
 
-      def append_following_source token
-        @following_source << token
+      def append_source token
+        @source << token
       end
 
-      def wrap_target_by metamorphoser
-        metamorphoser.wrap_token @target_token, @following_source, @line_number, @column_number
-      end
-
-      def wrap_whole_by metamorphoser
-        metamorphoser.wrap_source @target_token, @following_source, @line_number, @column_number
-      end
-
-      def to_s # called in TokenWrapper::Stack#join
-        @following_source
+      def to_s # called in SourcePiece::Stack#join
+        @source
       end
 
       class Stack
 
         def initialize
-          @tokens = [TokenWrapper.new]
+          @source_pieces = [ SourcePiece.new('') ]
         end
 
-        def push_wrappable wrappable_token, line_number, column_number
-          @tokens.push TokenWrapper.new( wrappable_token, line_number, column_number )
+        def push_new_piece initial_token, line_number, column_number
+          @source_pieces.push SourcePiece.new( initial_token, line_number, column_number )
         end
 
         def push_non_wrappable token
-          self.current.append_following_source token
+          self.current.append_source token
         end
 
         def current
-          @tokens.last
-        end
-
-        def wrap_current_target_by metamorphoser
-          wrapped = self.current.wrap_target_by metamorphoser
-          self.switch_target_into wrapped
+          @source_pieces.last
         end
 
         def wrap_current_by metamorphoser
-          wrapped = self.current.wrap_whole_by metamorphoser
-          self.switch_target_into wrapped
-        end
-
-        def switch_target_into wrapped_source
-          @tokens.pop
-          self.push_non_wrappable wrapped_source
+          wrapped = metamorphoser.wrap_source_piece self.current
+          self.push_non_wrappable wrapped
+          @source_pieces.pop
         end
 
         def join
-          @tokens.join ''.freeze
+          @source_pieces.join ''.freeze
         end
 
       end
