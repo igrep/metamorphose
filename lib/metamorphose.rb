@@ -132,8 +132,8 @@ module Metamorphose
 
         def wrap_current_by metamorphoser
           wrapped = metamorphoser.wrap_source_piece self.current
-          self.push_non_wrappable wrapped
           @source_pieces.pop
+          self.push_non_wrappable wrapped
         end
 
         def join
