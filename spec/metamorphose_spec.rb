@@ -28,7 +28,7 @@ describe Metamorphose do
         let( :line_num ) { 1 }
         let( :col_num ) { source_code.index( 'hoge' ) }
         it 'returns the expression wrapped with _metamorphose_piece' do
-          result.should eq %Q'MetamorphoseForDescription._metamorphose_piece(hoge, "hoge", [#{line_num}, #{col_num}])'
+          result.should eq %Q'MetamorphoseForDescription._metamorphose_piece((hoge), "hoge", [#{line_num}, #{col_num}])'
         end
 
         context 'when the expression does not have no runtime error.' do
@@ -51,10 +51,10 @@ describe Metamorphose do
             'MetamorphoseForDescription._metamorphose_piece(' \
               '(' \
                 'hoge ' \
-                "MetamorphoseForDescription._metamorphose_piece(ab, \"ab\", [#{line_num}, #{col_num_ab}]), " \
-                "MetamorphoseForDescription._metamorphose_piece(cd, \"cd\", [#{line_num}, #{col_num_cd}])" \
+                "MetamorphoseForDescription._metamorphose_piece((ab), \"ab\", [#{line_num}, #{col_num_ab}]), " \
+                "MetamorphoseForDescription._metamorphose_piece((cd), \"cd\", [#{line_num}, #{col_num_cd}])" \
               '), ' \
-              '"hoge", ' \
+              "#{source_code.inspect}, " \
               "[#{line_num}, #{col_num_hoge}]" \
             ')'
           )
