@@ -26,7 +26,7 @@ describe Metamorphose do
       context 'given a simple expression in Ruby' do
         let( :source_code ) { 'hoge' }
         let( :line_num ) { 1 }
-        let( :col_num ) { source_code.length }
+        let( :col_num ) { source_code.index( 'hoge' ) }
         it 'returns the expression wrapped with _metamorphose_piece' do
           result.should eq %Q'MetamorphoseForDescription._metamorphose_piece(hoge, "hoge", [#{line_num}, #{col_num}])'
         end
@@ -43,9 +43,9 @@ describe Metamorphose do
       context 'given a source code in Ruby' do
         let( :source_code ) { 'hoge ab, cd' }
         let( :line_num ) { 1 }
-        let( :col_num_hoge ) { source_code.index( 'hoge' ) + 'hoge'.length }
-        let( :col_num_ab ) { source_code.index( 'ab' ) + 'ab'.length }
-        let( :col_num_cd ) { source_code.index( 'cd' ) + 'cd'.length }
+        let( :col_num_hoge ) { source_code.index( 'hoge' ) }
+        let( :col_num_ab ) { source_code.index( 'ab' ) }
+        let( :col_num_cd ) { source_code.index( 'cd' ) }
         it 'returns the source code each of whose values are wrapped with metamorphose_piece' do
           result.should eq(
             'MetamorphoseForDescription._metamorphose_piece(' \
