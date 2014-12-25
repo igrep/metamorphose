@@ -1,4 +1,4 @@
-Copyright (c) 2013 Yamamoto Yuji
+Copyright (c) 2013 YujiI decided to say my name "Yuji Yamamoto", not "Yamamoto Yuji" Yamamoto
 
 MIT License
 
